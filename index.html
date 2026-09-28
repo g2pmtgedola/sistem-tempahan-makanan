@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISTEM TEMPAHAN MAKANAN - Politeknik METrO Tasek Gelugor</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/receipt.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- Chart.js & html2pdf CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <div id="app">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-wrap">
+          <img src="assets/logo.png" alt="Politeknik METrO Tasek Gelugor" class="sidebar-logo-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150x40?text=PMTG+Logo'">
+        </div>
+        <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Kuncup/Kembang Sidebar">☰</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-tab="dashboard" onclick="window.state.setActiveTab('dashboard')">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-tab="menu-customer" onclick="window.state.setActiveTab('menu-customer')">
+          <span class="nav-icon">🍽️</span>
+          <span class="nav-text">Menu Pelanggan</span>
+        </a>
+
+        <a class="nav-item" data-tab="cart" onclick="window.state.setActiveTab('cart')">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-text">Troli & POS</span>
+          <span id="cart-badge-count" class="badge-counter" style="display:none; position:relative; top:0; right:0; margin-left:auto;">0</span>
+        </a>
+
+        <a class="nav-item" data-tab="orders" onclick="window.state.setActiveTab('orders')">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Pengurusan Tempahan</span>
+        </a>
+
+        <a class="nav-item" data-tab="kds" onclick="window.state.setActiveTab('kds')">
+          <span class="nav-icon">👨‍🍳</span>
+          <span class="nav-text">Paparan Dapur (KDS)</span>
+        </a>
+
+        <a class="nav-item" data-tab="manual" onclick="window.state.setActiveTab('manual')">
+          <span class="nav-icon">📖</span>
+          <span class="nav-text">Manual Pengguna</span>
+        </a>
+
+        <div style="margin: 12px 10px 4px 10px; font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;" class="nav-text">
+          PENTADBIRAN
+        </div>
+
+        <a class="nav-item" data-tab="menu-admin" onclick="window.state.setActiveTab('menu-admin')">
+          <span class="nav-icon">🍱</span>
+          <span class="nav-text">Pengurusan Menu</span>
+        </a>
+
+        <a class="nav-item" data-tab="category" onclick="window.state.setActiveTab('category')">
+          <span class="nav-icon">📁</span>
+          <span class="nav-text">Kategori Makanan</span>
+        </a>
+
+        <a class="nav-item" data-tab="customers" onclick="window.state.setActiveTab('customers')">
+          <span class="nav-icon">👥</span>
+          <span class="nav-text">Pelanggan</span>
+        </a>
+
+        <a class="nav-item" data-tab="staff" onclick="window.state.setActiveTab('staff')">
+          <span class="nav-icon">👨‍💼</span>
+          <span class="nav-text">Pengurusan Staff</span>
+        </a>
+
+        <a class="nav-item" data-tab="promotions" onclick="window.state.setActiveTab('promotions')">
+          <span class="nav-icon">🎁</span>
+          <span class="nav-text">Promosi & Baucer</span>
+        </a>
+
+        <a class="nav-item" data-tab="reports" onclick="window.state.setActiveTab('reports')">
+          <span class="nav-icon">📈</span>
+          <span class="nav-text">Laporan Jualan</span>
+        </a>
+
+        <a class="nav-item" data-tab="settings" onclick="window.state.setActiveTab('settings')">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Tetapan Restoran</span>
+        </a>
+
+        <a class="nav-item" onclick="window.auth.logout()" style="color: var(--danger); margin-top: auto;">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-text">Log Keluar</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="user-avatar" style="background: transparent;"><img src="assets/logo.png" style="height: 24px; object-fit: contain;"></div>
+          <div class="user-info-text">
+            <div id="user-display-name" style="font-weight: 700; font-size: 0.85rem;">Pelanggan Maya</div>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">PMTG Kafeteria</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Sticky Header -->
+      <header class="top-header glass-header">
+        <div class="header-left">
+          <div class="page-title-wrap">
+            <h2 id="page-title-text">Dashboard Utama</h2>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Quick Link to Interactive Manual -->
+          <button class="btn btn-secondary btn-sm" onclick="window.state.setActiveTab('manual')" title="Manual Pengguna">
+            📖 Manual
+          </button>
+
+          <!-- AI Assistant Launcher -->
+          <button class="ai-fab-header" onclick="window.aiAssistant.toggleDrawer()" title="Tanya AI Assistant">
+            🤖
+          </button>
+
+          <!-- Notification Drawer Trigger -->
+          <button class="notif-btn" onclick="window.toast.info('Tiada notifikasi baharu.', 'Notifikasi Sistem')" title="Notifikasi">
+            🔔
+            <span class="badge-counter">1</span>
+          </button>
+
+          <!-- Light/Dark Mode Switcher -->
+          <button class="theme-toggle-btn" onclick="window.state.toggleTheme()" title="Tukar Tema Dark/Light">
+            🌙
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic View Body -->
+      <main id="main-content-area" class="content-body">
+        <!-- Views rendered here by AppController -->
+      </main>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/db.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/category.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/kds.js"></script>
+  <script src="js/receipt.js"></script>
+  <script src="js/customers.js"></script>
+  <script src="js/staff.js"></script>
+  <script src="js/promotions.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/manual.js"></script>
+  <script src="js/ai-assistant.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
